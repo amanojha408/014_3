@@ -29,9 +29,9 @@ export default function OutcomeMap({ corridors, selectedCorridorId, onSelectCorr
 
     // High performance dark tile layer (CartoDB Dark Matter with authenticated API key)
     L.tileLayer(
-      `https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?api_key=${CARTO_API_KEY}`,
+      `https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png?key=${CARTO_API_KEY}`,
       {
-        attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; MoRTH India',
+        attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         subdomains: 'abcd',
         maxZoom: 19
       }

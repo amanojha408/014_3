@@ -23,8 +23,8 @@ window.RoadSafeMap = (function () {
 
     // High performance dark tile layer (CartoDB Dark Matter with authenticated API key)
     const CARTO_API_KEY = 'cb1_3i9m_1_1864956ea990f7a63a0ee363';
-    L.tileLayer(`https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?api_key=${CARTO_API_KEY}`, {
-      attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; MoRTH India',
+    L.tileLayer(`https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png?key=${CARTO_API_KEY}`, {
+      attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       subdomains: 'abcd',
       maxZoom: 19
     }).addTo(map);
