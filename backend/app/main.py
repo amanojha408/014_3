@@ -33,6 +33,7 @@ from backend.app.models.spatial_cluster import spatial_engine
 from backend.app.models.siamese_cv import siamese_cv_engine
 from backend.app.services.watson_ml import watson_connector
 from backend.app.services.cloud_storage import cloud_storage
+from backend.app.services.custom_dataset import load_custom_accidents
 
 app = FastAPI(
     title="RoadSafe India 360 API",
@@ -125,6 +126,11 @@ def get_spatial_clusters():
 def query_polygon(req: PolygonQueryRequest):
     """Outcome 1: Calculate aggregate road risk for Leaflet-Geoman drawn administrative zone."""
     return spatial_engine.query_polygon_boundary(req.polygon_coordinates)
+
+@app.get("/api/accidents/custom")
+def get_custom_accidents():
+    """Serve user-provided accident / live incident dataset from CSV or JSON."""
+    return load_custom_accidents()
 
 @app.get("/api/cv/sample-pairs")
 def get_cv_sample_pairs():

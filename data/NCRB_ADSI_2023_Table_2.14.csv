@@ -1,0 +1,94 @@
+Sl. No. (Col.1),State/UT/City (Col.2),Cases (Col.3),Married (Col.4),Un-Married (Col.5),Total (Col.6) (Col. 4 + Col. 5)
+1,Andhra Pradesh,8,15,4,19
+2,Arunachal Pradesh,0,0,0,0
+3,Assam,1,2,0,2
+4,Bihar,0,0,0,0
+5,Chhattisgarh,6,4,8,12
+6,Goa,0,0,0,0
+7,Gujarat,5,10,5,15
+8,Haryana,1,2,0,2
+9,Himachal Pradesh,0,0,0,0
+10,Jharkhand,0,0,0,0
+11,Karnataka,4,5,7,12
+12,Kerala,17,32,8,40
+13,Madhya Pradesh,9,10,11,21
+14,Maharashtra,3,4,2,6
+15,Manipur,0,0,0,0
+16,Meghalaya,0,0,0,0
+17,Mizoram,0,0,0,0
+18,Nagaland,0,0,0,0
+19,Odisha,0,0,0,0
+20,Punjab,4,8,3,11
+21,Rajasthan,12,9,18,27
+22,Sikkim,0,0,0,0
+23,Tamil Nadu,58,84,36,120
+24,Telangana,2,3,4,7
+25,Tripura,0,0,0,0
+26,Uttar Pradesh,0,0,0,0
+27,Uttarakhand,0,0,0,0
+28,West Bengal,1,2,2,4
+Total (States),Total (States),131,190,108,298
+29,Andaman and Nicobar Islands,0,0,0,0
+30,Chandigarh,0,0,0,0
+31,Dadra and Nagar Haveli and Daman and Diu,0,0,0,0
+32,Delhi,0,0,0,0
+33,Jammu and Kashmir,0,0,0,0
+34,Ladakh,0,0,0,0
+35,Lakshadweep,0,0,0,0
+36,Puducherry,0,0,0,0
+Total (UTs),Total (UTs),0,0,0,0
+Total (All India),Total (All India),131,190,108,298
+37,Agra,0,0,0,0
+38,Ahmedabad,0,0,0,0
+39,Amritsar,0,0,0,0
+40,Asansol,1,2,2,4
+41,Aurangabad,0,0,0,0
+42,Bengaluru,0,0,0,0
+43,Bhopal,0,0,0,0
+44,Chandigarh (City),0,0,0,0
+45,Chennai,3,5,1,6
+46,Coimbatore,2,2,2,4
+47,Delhi (City),0,0,0,0
+48,Dhanbad,0,0,0,0
+49,Durg Bhilainagar,2,3,1,4
+50,Faridabad,1,2,0,2
+51,Ghaziabad,0,0,0,0
+52,Gwalior,0,0,0,0
+53,Hyderabad,2,3,4,7
+54,Indore,1,2,0,2
+55,Jabalpur,0,0,0,0
+56,Jaipur,0,0,0,0
+57,Jamshedpur,0,0,0,0
+58,Jodhpur,0,0,0,0
+59,Kannur,0,0,0,0
+60,Kanpur,0,0,0,0
+61,Kochi,0,0,0,0
+62,Kolkata,0,0,0,0
+63,Kollam,0,0,0,0
+64,Kota,0,0,0,0
+65,Kozhikode,2,4,0,4
+66,Lucknow,0,0,0,0
+67,Ludhiana,0,0,0,0
+68,Madurai,5,5,6,11
+69,Malappuram,0,0,0,0
+70,Meerut,0,0,0,0
+71,Mumbai,0,0,0,0
+72,Nagpur,0,0,0,0
+73,Nasik,0,0,0,0
+74,Patna,0,0,0,0
+75,Prayaraj,0,0,0,0
+76,Pune,0,0,0,0
+77,Raipur,0,0,0,0
+78,Rajkot,0,0,0,0
+79,Ranchi,0,0,0,0
+80,Srinagar,0,0,0,0
+81,Surat,1,2,2,4
+82,Thiruvananthapuram,0,0,0,0
+83,Thrissur,3,5,2,7
+84,Tiruchirappalli,2,4,0,4
+85,Vadodara,1,2,1,3
+86,Varanasi,0,0,0,0
+87,Vasai Virar,0,0,0,0
+88,Vijayawada,0,0,0,0
+89,Vishakhapatnam,0,0,0,0
+Total (Cities),Total (Cities),26,41,21,62

@@ -1,0 +1,16 @@
+id,latitude,longitude,location_name,corridor,accident_severity,collision_type,fatalities,grievous_injuries,date,time,weather,vehicles_involved,cause
+ACC-2026-001,28.3845,76.9812,Bilaspur Chowk KM 44.5,NH-48,Fatal,Rear-end collision into stalled truck,2,3,2026-01-14,22:45,Foggy,Truck & Car,Inadequate lighting & severe pothole swerve
+ACC-2026-002,28.4012,77.0125,Manesar IMT Flyover Descent,NH-48,Grievous,Overturning,0,2,2026-02-03,14:20,Clear,Bus,Sharp curve radius IRC violation
+ACC-2026-003,18.7562,73.3458,Bhor Ghat Incline KM 48,Mumbai-Pune Exp,Fatal,Head-on barrier impact,1,1,2026-01-22,03:15,Rain,SUV,Wet surface skid friction loss
+ACC-2026-004,18.7891,73.3721,Khandala Exit Gradient,Mumbai-Pune Exp,Grievous,Multi-vehicle pileup,0,4,2026-02-18,07:30,Mist,3 Cars & Tempo,Brake fade on 4% downgrade
+ACC-2026-005,12.9172,77.6228,Silk Board Junction ORR,Bengaluru ORR,Minor,Sideswipe,0,1,2026-02-25,18:40,Clear,2 Two-wheelers,High PCU bottleneck & missing lane studs
+ACC-2026-006,12.9348,77.6914,Bellandur EcoSpace Flyover,Bengaluru ORR,Grievous,Pedestrian knock-down,0,1,2026-03-01,21:10,Drizzle,Car & Pedestrian,Zero mid-block pedestrian crossing IRC:103
+ACC-2026-007,28.6942,77.3812,Vijay Nagar Bypass KM 18,Delhi-Meerut Exp,Fatal,High-speed impact,3,0,2026-01-30,01:10,Dense Fog,Sedan,Speed limit violation >120 km/h
+ACC-2026-008,28.7215,77.4128,Bhojpur Toll Plaza Approach,Delhi-Meerut Exp,Minor,Rear-end collision,0,0,2026-02-11,11:35,Clear,2 Cars,Abrupt toll gate queueing
+ACC-2026-009,26.8521,80.9462,Shaheed Path Intersect,NH-27 / Lucknow,Fatal,Head-on,1,2,2026-02-14,23:20,Clear,Truck & Tempo,Missing median crash barrier IRC:119
+ACC-2026-010,17.4325,78.3842,Gachibowli Junction ORR,Hyderabad ORR,Grievous,Rollover,0,2,2026-03-04,02:15,Clear,Sports Car,Excessive speed on curve entry
+ACC-2026-011,28.4595,77.0266,Hero Honda Chowk Underpass,NH-48,Grievous,Waterlogging aquaplaning,0,3,2026-02-27,19:15,Heavy Rain,Car,Drainage choking & surface ponding
+ACC-2026-012,18.8214,73.4112,Lonavala Ghat Chicanes,Mumbai-Pune Exp,Fatal,Rollover into gorge,2,1,2026-01-08,16:50,Clear,Minibus,W-beam barrier rupture
+ACC-2026-013,13.0112,77.5541,Hebbal Flyover Loop,Bengaluru Outer Ring,Minor,Side collision,0,0,2026-02-09,08:50,Clear,Bus & Car,Merge weaving conflict
+ACC-2026-014,28.5842,77.3125,Noida-Greater Noida Exp KM 8,Delhi-NCR,Fatal,Rear-end collision,1,1,2026-02-20,05:40,Smog,Car into Tractor,Unlit rear tractor trailer
+ACC-2026-015,22.5726,88.3639,Kona Expressway Kona Flyover,NH-16 / Kolkata,Fatal,Head-on collision,2,4,2026-01-19,22:00,Fog,Bus & Mini-truck,Absence of physical median divider

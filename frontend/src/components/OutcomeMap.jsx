@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import '@geoman-io/leaflet-geoman-free';
-import { fetchSpatialClusters, queryBoundaryPolygon } from '../services/api';
+import { fetchSpatialClusters, queryBoundaryPolygon, fetchCustomAccidents } from '../services/api';
 
 const CARTO_API_KEY = import.meta.env.VITE_CARTO_API_KEY || 'cb1_3i9m_1_1864956ea990f7a63a0ee363';
 
@@ -10,12 +10,15 @@ export default function OutcomeMap({ corridors, selectedCorridorId, onSelectCorr
   const mapRef = useRef(null);
   const markersLayerRef = useRef(null);
   const clustersLayerRef = useRef(null);
+  const accidentsLayerRef = useRef(null);
   const activePolygonRef = useRef(null);
 
   const [clustersActive, setClustersActive] = useState(false);
+  const [accidentsActive, setAccidentsActive] = useState(true);
+  const [customAccidents, setCustomAccidents] = useState([]);
   const [boundaryData, setBoundaryData] = useState(null);
 
-  // Initialize Map
+  // Initialize Map with Crisp Light CartoDB Voyager Basemap
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
 
@@ -27,9 +30,9 @@ export default function OutcomeMap({ corridors, selectedCorridorId, onSelectCorr
 
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-    // High performance dark tile layer (CartoDB Dark Matter with authenticated API key)
+    // High performance LIGHT CartoDB Voyager basemap with verified API key
     L.tileLayer(
-      `https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png?key=${CARTO_API_KEY}`,
+      `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${CARTO_API_KEY}`,
       {
         attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         subdomains: 'abcd',
@@ -39,6 +42,7 @@ export default function OutcomeMap({ corridors, selectedCorridorId, onSelectCorr
 
     markersLayerRef.current = L.layerGroup().addTo(map);
     clustersLayerRef.current = L.layerGroup().addTo(map);
+    accidentsLayerRef.current = L.layerGroup().addTo(map);
 
     // Geoman controls
     map.pm.addControls({
@@ -79,13 +83,24 @@ export default function OutcomeMap({ corridors, selectedCorridorId, onSelectCorr
 
     mapRef.current = map;
 
+    // Fetch custom accident dataset
+    fetchCustomAccidents()
+      .then((data) => {
+        if (data?.accidents) {
+          setCustomAccidents(data.accidents);
+        }
+      })
+      .catch((err) => {
+        console.warn('Could not load custom accidents dataset:', err);
+      });
+
     return () => {
       map.remove();
       mapRef.current = null;
     };
   }, []);
 
-  // Render Corridor Markers
+  // Render Corridor Blackspot Markers
   useEffect(() => {
     if (!mapRef.current || !markersLayerRef.current || !corridors || corridors.length === 0) return;
 
@@ -93,14 +108,14 @@ export default function OutcomeMap({ corridors, selectedCorridorId, onSelectCorr
 
     corridors.forEach((seg) => {
       const score = seg.risk_score || 50;
-      let markerColor = '#10b981';
+      let markerColor = '#059669';
 
       if (score >= 70) {
-        markerColor = '#ef4444';
+        markerColor = '#dc2626';
       } else if (score >= 50) {
-        markerColor = '#f59e0b';
+        markerColor = '#d97706';
       } else if (score >= 30) {
-        markerColor = '#38bdf8';
+        markerColor = '#0284c7';
       }
 
       const isSelected = seg.id === selectedCorridorId;
@@ -110,7 +125,7 @@ export default function OutcomeMap({ corridors, selectedCorridorId, onSelectCorr
         html: `
           <div class="blackspot-marker ${isSelected ? 'selected' : ''}">
             <div class="blackspot-ring" style="border-color: ${markerColor}"></div>
-            <div class="blackspot-pulse" style="background-color: ${markerColor}">
+            <div class="blackspot-pulse" style="background-color: ${markerColor}; border: 2px solid #ffffff;">
               ${Math.round(score)}
             </div>
           </div>
@@ -122,14 +137,18 @@ export default function OutcomeMap({ corridors, selectedCorridorId, onSelectCorr
       const marker = L.marker([seg.latitude, seg.longitude], { icon: customIcon });
 
       marker.bindPopup(`
-        <div style="font-family: 'Outfit', sans-serif; min-width: 200px;">
-          <strong style="color: #38bdf8; font-size: 0.9rem;">${seg.corridor_name}</strong><br/>
-          <span style="font-size: 0.82rem; font-weight: 600; color: #fff;">${seg.location_name}</span>
-          <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 6px 0;"/>
-          <div style="font-size: 0.75rem; color: #94a3b8;">
-            Normalized Risk: <strong style="color: ${markerColor};">${score.toFixed(1)}/100</strong><br/>
-            Annual Crashes: <strong style="color: #fff;">${seg.historical_crashes_annual}</strong> | Fatalities: <strong style="color: #ef4444;">${seg.fatalities_annual}</strong><br/>
-            Primary Hazard: <em style="color: #cbd5e1;">${seg.primary_hazard}</em>
+        <div style="font-family: 'Outfit', sans-serif; min-width: 220px; color: #0f172a; padding: 2px;">
+          <div style="font-size: 0.72rem; font-weight: 700; color: #2563eb; text-transform: uppercase;">
+            ${seg.corridor_name}
+          </div>
+          <strong style="font-size: 0.95rem; color: #0f172a; display: block; margin-top: 2px;">
+            ${seg.location_name}
+          </strong>
+          <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 6px 0;"/>
+          <div style="font-size: 0.78rem; line-height: 1.45; color: #475569;">
+            Normalized Risk Score: <strong style="color: ${markerColor}; font-size: 0.85rem;">${score.toFixed(1)}/100</strong><br/>
+            Annual Crashes: <strong style="color: #0f172a;">${seg.historical_crashes_annual}</strong> | Fatalities: <strong style="color: #dc2626;">${seg.fatalities_annual}</strong><br/>
+            Primary Road Hazard: <em style="color: #0f172a;">${seg.primary_hazard}</em>
           </div>
         </div>
       `);
@@ -141,6 +160,60 @@ export default function OutcomeMap({ corridors, selectedCorridorId, onSelectCorr
       markersLayerRef.current.addLayer(marker);
     });
   }, [corridors, selectedCorridorId]);
+
+  // Render Custom Accident Dataset Markers
+  useEffect(() => {
+    if (!mapRef.current || !accidentsLayerRef.current) return;
+
+    accidentsLayerRef.current.clearLayers();
+
+    if (!accidentsActive || customAccidents.length === 0) return;
+
+    customAccidents.forEach((acc) => {
+      const isFatal = acc.accident_severity.toLowerCase().includes('fatal');
+      const isGrievous = acc.accident_severity.toLowerCase().includes('grievous');
+      const pinColor = isFatal ? '#dc2626' : isGrievous ? '#d97706' : '#2563eb';
+
+      const accidentIcon = L.divIcon({
+        className: 'accident-marker-wrap',
+        html: `
+          <div style="width: 22px; height: 22px; border-radius: 50%; background: ${pinColor}; border: 2px solid #ffffff; box-shadow: 0 2px 6px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 10px;">
+            <i class="fa-solid fa-car-burst"></i>
+          </div>
+        `,
+        iconSize: [22, 22],
+        iconAnchor: [11, 11]
+      });
+
+      const accMarker = L.marker([acc.latitude, acc.longitude], { icon: accidentIcon });
+
+      accMarker.bindPopup(`
+        <div style="font-family: 'Outfit', sans-serif; min-width: 220px; color: #0f172a; padding: 2px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.68rem; font-weight: 800; color: ${pinColor}; background: ${pinColor}18; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">
+              ${acc.accident_severity}
+            </span>
+            <span style="font-size: 0.7rem; color: #64748b; font-family: monospace;">${acc.id}</span>
+          </div>
+          <strong style="font-size: 0.92rem; color: #0f172a; display: block; margin: 4px 0 2px 0;">
+            ${acc.location_name}
+          </strong>
+          <div style="font-size: 0.72rem; color: #64748b;">
+            Corridor: <strong>${acc.corridor}</strong> | Date: ${acc.date} (${acc.time})
+          </div>
+          <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 6px 0;"/>
+          <div style="font-size: 0.76rem; line-height: 1.45; color: #334155;">
+            Collision Type: <strong>${acc.collision_type}</strong><br/>
+            Fatalities: <strong style="color: #dc2626;">${acc.fatalities}</strong> | Grievous Injuries: <strong style="color: #d97706;">${acc.grievous_injuries}</strong><br/>
+            Weather: ${acc.weather} | Vehicles: ${acc.vehicles_involved}<br/>
+            Probable Cause: <em style="color: #0f172a;">${acc.cause}</em>
+          </div>
+        </div>
+      `);
+
+      accidentsLayerRef.current.addLayer(accMarker);
+    });
+  }, [customAccidents, accidentsActive]);
 
   // Center on selected corridor
   useEffect(() => {
@@ -172,15 +245,17 @@ export default function OutcomeMap({ corridors, selectedCorridorId, onSelectCorr
 
       clusters.forEach((cl) => {
         const circle = L.circle([cl.center_lat, cl.center_lon], {
-          color: '#f59e0b',
-          fillColor: '#f59e0b',
-          fillOpacity: 0.15,
-          radius: 25000 // 25km radius
+          color: '#2563eb',
+          fillColor: '#2563eb',
+          fillOpacity: 0.12,
+          radius: 25000
         });
 
         circle.bindTooltip(`
-          <strong>${cl.cluster_name}</strong><br/>
-          Segments: ${cl.segment_count} | Total Crashes: ${cl.total_annual_crashes}
+          <div style="font-family: 'Outfit', sans-serif;">
+            <strong>${cl.cluster_name}</strong><br/>
+            Corridors: ${cl.segment_count} | Annual Crashes: ${cl.total_annual_crashes}
+          </div>
         `);
 
         clustersLayerRef.current.addLayer(circle);
@@ -196,22 +271,40 @@ export default function OutcomeMap({ corridors, selectedCorridorId, onSelectCorr
     <section className="panel panel-map">
       <div className="panel-header">
         <div className="panel-title">
-          <i className="fa-solid fa-map-location-dot"></i> Outcome 1: Interactive Geospatial Risk Map &amp; Geoman
+          <i className="fa-solid fa-map-location-dot"></i>
+          National Road Network Geospatial Twin
         </div>
         <div className="map-controls">
-          <button className="btn-tool" id="btn-fit-corridors" onClick={fitAllCorridors} title="Fit all Indian corridors">
-            <i className="fa-solid fa-expand"></i> All Corridors
+          <button
+            className="btn-tool"
+            id="btn-fit-corridors"
+            onClick={fitAllCorridors}
+            title="Fit map to all registered Indian National Corridors"
+          >
+            <i className="fa-solid fa-expand"></i> Overview
           </button>
+
+          <button
+            className={`btn-tool ${accidentsActive ? 'active' : ''}`}
+            id="btn-toggle-accidents"
+            onClick={() => setAccidentsActive(!accidentsActive)}
+            title="Toggle user custom / live accident dataset markers"
+          >
+            <i className="fa-solid fa-car-burst"></i>
+            Accidents ({customAccidents.length})
+          </button>
+
           <button
             className={`btn-tool ${clustersActive ? 'active' : ''}`}
             id="btn-toggle-clusters"
             onClick={toggleClusters}
-            title="Filter DBSCAN Blackspots"
+            title="DBSCAN high-density incident clustering"
           >
-            <i className="fa-solid fa-circle-nodes"></i> DBSCAN Clusters
+            <i className="fa-solid fa-circle-nodes"></i> Blackspot Clusters
           </button>
+
           <div className="geoman-hint">
-            <i className="fa-solid fa-draw-polygon"></i> <span>Draw polygon to query ward boundary</span>
+            <i className="fa-solid fa-draw-polygon"></i> <span>Draw polygon for ward query</span>
           </div>
         </div>
       </div>

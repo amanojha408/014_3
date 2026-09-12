@@ -77,8 +77,9 @@ export async function verifyRepairCV(payload) {
   return res.json();
 }
 
-export async function fetchIBMStatus() {
-  const res = await fetch(`${API_BASE}/ibm/status`);
-  if (!res.ok) throw new Error(`Failed to fetch IBM telemetry: ${res.statusText}`);
+export async function fetchCustomAccidents() {
+  const res = await fetch(`${API_BASE}/accidents/custom`);
+  if (!res.ok) throw new Error(`Failed to fetch custom accidents: ${res.statusText}`);
   return res.json();
 }
+
