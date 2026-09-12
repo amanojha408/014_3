@@ -63,6 +63,7 @@ class CounterfactualRequest(BaseModel):
     speed_calming_kmh: float = Field(default=0.0, description="Speed limit reduction (e.g. -15 km/h)")
 
 class CounterfactualResponse(BaseModel):
+    model_config = {"protected_namespaces": ()}
     segment_id: str
     baseline_risk_score: float
     projected_risk_score: float
