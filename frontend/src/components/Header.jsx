@@ -1,6 +1,14 @@
 import React from 'react';
 
-export default function Header({ persona, onPersonaChange, latency }) {
+export default function Header({
+  persona,
+  onPersonaChange,
+  latency,
+  user,
+  onOpenAuthModal,
+  onSignOut,
+  onToggleGuide
+}) {
   return (
     <header className="app-header">
       <div className="brand-container">
@@ -33,21 +41,63 @@ export default function Header({ persona, onPersonaChange, latency }) {
         </div>
       </div>
 
-      {/* User Persona Archetype Switcher */}
-      <div className="persona-selector-container">
-        <label htmlFor="persona-select">
-          <i className="fa-solid fa-user-shield"></i> Persona:
-        </label>
-        <select
-          id="persona-select"
-          className="persona-dropdown"
-          value={persona}
-          onChange={(e) => onPersonaChange(e.target.value)}
+      {/* User Persona & Authentication Action Area */}
+      <div className="header-actions-area">
+        {/* Quick Guide Toggle */}
+        <button
+          type="button"
+          className="btn-header-tool"
+          onClick={onToggleGuide}
+          title="Toggle How to Use Step-by-Step Guide"
         >
-          <option value="engineer">Municipal Traffic Engineer (Geoman &amp; Boundaries)</option>
-          <option value="authority">State Road Authority (SHAP &amp; Budget Justification)</option>
-          <option value="fleet">Fleet Driver (Passive CV &amp; Edge Alerts)</option>
-        </select>
+          <i className="fa-solid fa-compass"></i> Guide
+        </button>
+
+        {/* User Persona Archetype Switcher */}
+        <div className="persona-selector-container">
+          <label htmlFor="persona-select">
+            <i className="fa-solid fa-user-gear"></i> Persona:
+          </label>
+          <select
+            id="persona-select"
+            className="persona-dropdown"
+            value={persona}
+            onChange={(e) => onPersonaChange(e.target.value)}
+          >
+            <option value="engineer">Municipal Traffic Engineer</option>
+            <option value="authority">State Road Authority</option>
+            <option value="fleet">Fleet Driver / Auditor</option>
+          </select>
+        </div>
+
+        {/* Supabase Authentication Status Pill */}
+        {user ? (
+          <div className="user-profile-pill" title={`Signed in as ${user.email}`}>
+            <div className="user-avatar-circle">
+              <i className="fa-solid fa-user"></i>
+            </div>
+            <div className="user-text-info">
+              <span className="user-display-name">{user.full_name || user.email.split('@')[0]}</span>
+              <span className="user-role-badge">{user.role || 'Authority'}</span>
+            </div>
+            <button
+              type="button"
+              className="btn-signout-mini"
+              onClick={onSignOut}
+              title="Sign Out"
+            >
+              <i className="fa-solid fa-right-from-bracket"></i>
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            className="btn-auth-trigger"
+            onClick={onOpenAuthModal}
+          >
+            <i className="fa-solid fa-lock"></i> Sign In / Demo Login
+          </button>
+        )}
       </div>
     </header>
   );

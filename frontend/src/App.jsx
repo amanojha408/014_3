@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Header from './components/Header';
+import HowToUseGuide from './components/HowToUseGuide';
 import LiveTicker from './components/LiveTicker';
 import OutcomeMap from './components/OutcomeMap';
 import CorridorOverviewCard from './components/CorridorOverviewCard';
@@ -9,7 +10,9 @@ import WhatIfSimulator from './components/WhatIfSimulator';
 import SeasonForecaster from './components/SeasonForecaster';
 import PrescriptiveInterventions from './components/PrescriptiveInterventions';
 import ClosedLoopCVModal from './components/ClosedLoopCVModal';
+import AuthModal from './components/AuthModal';
 import { fetchCorridors } from './services/api';
+import { getCurrentUserSession, signOutUser, setDemoProfile } from './services/supabase';
 
 const TICKER_MESSAGES = [
   "NH-48 KM 44.5 (Bilaspur Chowk): Severe pothole cluster detected by dashcam CV | Concessionaire dispatched <500ms",
@@ -28,6 +31,22 @@ export default function App() {
   const [tickerIndex, setTickerIndex] = useState(0);
   const [tickerText, setTickerText] = useState(TICKER_MESSAGES[0]);
   const [isCVModalOpen, setIsCVModalOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isGuideVisible, setIsGuideVisible] = useState(true);
+  const [user, setUser] = useState(null);
+
+  // Initialize Supabase session / Demo user
+  useEffect(() => {
+    getCurrentUserSession().then((sessionUser) => {
+      if (sessionUser) {
+        setUser(sessionUser);
+      } else {
+        // Auto-initialize demo profile for frictionless reviewer experience
+        const defaultDemo = setDemoProfile('morth_officer');
+        setUser(defaultDemo);
+      }
+    });
+  }, []);
 
   // Fetch initial corridors
   useEffect(() => {
@@ -74,24 +93,51 @@ export default function App() {
     }
   };
 
+  const handleSignOut = async () => {
+    await signOutUser();
+    setUser(null);
+  };
+
+  const handleFitMap = () => {
+    // Reset to overview
+    const btnFit = document.getElementById('btn-fit-corridors');
+    if (btnFit) btnFit.click();
+  };
+
   const activeCorridor = corridors.find((c) => c.id === selectedCorridorId);
   const corridorPrefix = selectedCorridorId ? selectedCorridorId.split('-')[0] : 'NH48';
 
   return (
     <div className="dark-theme" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      {/* Top Header with Supabase Auth & Persona */}
       <Header
         persona={persona}
         onPersonaChange={handlePersonaChange}
         latency={latency}
+        user={user}
+        onOpenAuthModal={() => setIsAuthModalOpen(true)}
+        onSignOut={handleSignOut}
+        onToggleGuide={() => setIsGuideVisible(!isGuideVisible)}
       />
 
+      {/* Live Dashcam Alert Ticker */}
       <LiveTicker
         tickerText={tickerText}
         onOpenCVStudio={() => setIsCVModalOpen(true)}
       />
 
+      {/* Main Page "How to Use" Step-by-Step Interactive Guide */}
+      {isGuideVisible && (
+        <HowToUseGuide
+          onSelectTab={(tabId) => setActiveTab(tabId)}
+          onFitMap={handleFitMap}
+          onOpenCVStudio={() => setIsCVModalOpen(true)}
+        />
+      )}
+
+      {/* Main Multi-Outcome Grid Layout */}
       <main className="dashboard-layout">
-        {/* Outcome 1: Map Panel */}
+        {/* Outcome 1: Map Panel with Leaflet-Geoman */}
         <OutcomeMap
           corridors={corridors}
           selectedCorridorId={selectedCorridorId}
@@ -124,10 +170,17 @@ export default function App() {
         </aside>
       </main>
 
-      {/* Secret Sauce Modal */}
+      {/* Secret Sauce Modal: Closed-Loop CV Verification Studio */}
       <ClosedLoopCVModal
         isOpen={isCVModalOpen}
         onClose={() => setIsCVModalOpen(false)}
+      />
+
+      {/* Supabase Authentication Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onUserChange={(newUser) => setUser(newUser)}
       />
     </div>
   );
