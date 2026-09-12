@@ -3,6 +3,11 @@ __pycache__/
 *$py.class
 *.so
 .env
+.env.local
+.env.*.local
+frontend/.env
+node_modules/
+frontend/node_modules/
 venv/
 env/
 .pytest_cache/

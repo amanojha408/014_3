@@ -190,13 +190,24 @@ def get_ibm_status():
         "cloud_object_storage": cloud_storage.get_bucket_telemetry_summary()
     }
 
-# ----------------- Mount Static Frontend -----------------
+# ----------------- Mount Static Frontend (React & Dist) -----------------
+FRONTEND_DIST = os.path.join(FRONTEND_DIR, "dist")
+ASSETS_DIR = os.path.join(FRONTEND_DIST, "assets")
+
+if os.path.exists(ASSETS_DIR):
+    app.mount("/assets", StaticFiles(directory=ASSETS_DIR), name="assets")
+
 if os.path.exists(FRONTEND_DIR):
     app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
 
 @app.get("/")
 def serve_index():
+    if os.path.exists(FRONTEND_DIST):
+        dist_index = os.path.join(FRONTEND_DIST, "index.html")
+        if os.path.exists(dist_index):
+            return FileResponse(dist_index)
     index_file = os.path.join(FRONTEND_DIR, "index.html")
     if os.path.exists(index_file):
         return FileResponse(index_file)
     return {"message": "RoadSafe India 360 API running. Visit /docs for Swagger UI."}
+

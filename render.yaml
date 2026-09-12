@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: roadsafe-india-360
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: "pip install --upgrade pip && pip install -r requirements.txt"
+    startCommand: "python run.py"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.12
+      - key: ENVIRONMENT
+        value: production
+      - key: CARTO_API_KEY
+        value: cb1_3i9m_1_1864956ea990f7a63a0ee363
+      - key: VITE_CARTO_API_KEY
+        value: cb1_3i9m_1_1864956ea990f7a63a0ee363
+      - key: SECRET_KEY
+        generateValue: true
