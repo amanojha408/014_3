@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RoadSafe India 360 | Continuous Road Safety Intelligence Network</title>
+  <meta name="description" content="Digital Road Twin & Closed-Loop CV Verification Network for Indian Transport Authorities to eliminate road fatalities." />
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  
+  <!-- Leaflet & Leaflet-Geoman -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <link rel="stylesheet" href="https://unpkg.com/@geoman-io/leaflet-geoman-free@2.14.2/dist/leaflet-geoman.css" />
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Bespoke App Styling -->
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body class="dark-theme">
+  <!-- Top Navigation & Live Telemetry Ticker -->
+  <header class="app-header">
+    <div class="brand-container">
+      <div class="brand-logo">
+        <i class="fa-solid fa-road-barrier"></i>
+      </div>
+      <div>
+        <div class="brand-title">RoadSafe India 360 <span class="badge-flag">🇮🇳</span></div>
+        <div class="brand-subtitle">Continuous Road Safety Intelligence & Digital Twin</div>
+      </div>
+    </div>
+
+    <!-- System Status & Cloud Connectors -->
+    <div class="system-pills">
+      <div class="pill pill-live" title="Real-time telemetry stream active">
+        <span class="live-dot"></span> Digital Twin: Active
+      </div>
+      <div class="pill pill-ibm" id="watson-pill">
+        <i class="fa-solid fa-microchip"></i> Watson ML: Deployed
+      </div>
+      <div class="pill pill-cloud" id="cos-pill">
+        <i class="fa-solid fa-database"></i> IBM COS: Connected
+      </div>
+      <div class="pill pill-latency">
+        <i class="fa-solid fa-bolt"></i> Latency: <span id="telemetry-latency">28ms</span>
+      </div>
+    </div>
+
+    <!-- User Persona Archetype Switcher -->
+    <div class="persona-selector-container">
+      <label for="persona-select"><i class="fa-solid fa-user-shield"></i> Persona:</label>
+      <select id="persona-select" class="persona-dropdown">
+        <option value="engineer" selected>Municipal Traffic Engineer (Geoman & Boundaries)</option>
+        <option value="authority">State Road Authority (SHAP & Budget Justification)</option>
+        <option value="fleet">Fleet Driver (Passive CV & Edge Alerts)</option>
+      </select>
+    </div>
+  </header>
+
+  <!-- Breaking Alert Ticker -->
+  <div class="ticker-bar">
+    <div class="ticker-label"><i class="fa-solid fa-triangle-exclamation"></i> LIVE TELEMETRY</div>
+    <div class="ticker-text" id="ticker-content">
+      NH-48 KM 44.5 (Bilaspur Chowk): Severe pothole cluster detected by dashcam CV | Mumbai-Pune Bhor Ghat: Monsoon friction degradation active | Closed-Loop CV Auto-Verifier ready...
+    </div>
+    <div class="ticker-actions">
+      <button class="btn-sm btn-ghost" id="open-cv-studio-btn">
+        <i class="fa-solid fa-camera-retro"></i> Open CV Audit Studio
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Multi-Outcome Grid -->
+  <main class="dashboard-layout">
+    <!-- Left Column: Outcome 1 Geospatial Map + Leaflet-Geoman -->
+    <section class="panel panel-map">
+      <div class="panel-header">
+        <div class="panel-title">
+          <i class="fa-solid fa-map-location-dot"></i> Outcome 1: Interactive Geospatial Risk Map & Geoman
+        </div>
+        <div class="map-controls">
+          <button class="btn-tool" id="btn-fit-corridors" title="Fit all Indian corridors">
+            <i class="fa-solid fa-expand"></i> All Corridors
+          </button>
+          <button class="btn-tool" id="btn-toggle-clusters" title="Filter DBSCAN Blackspots">
+            <i class="fa-solid fa-circle-nodes"></i> DBSCAN Clusters
+          </button>
+          <div class="geoman-hint">
+            <i class="fa-solid fa-draw-polygon"></i> <span>Draw polygon to query ward boundary</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Map Container -->
+      <div id="risk-map" class="map-container"></div>
+
+      <!-- Spatial Boundary Query Result Card (Dynamic when user draws polygon with Geoman) -->
+      <div id="boundary-results" class="boundary-card hidden">
+        <div class="boundary-header">
+          <span><i class="fa-solid fa-vector-square"></i> Administrative Safety Boundary Query</span>
+          <button class="btn-close-sm" id="close-boundary-card">&times;</button>
+        </div>
+        <div class="boundary-grid">
+          <div class="b-stat"><span class="lbl">Enclosed Segments</span><span class="val" id="b-count">0</span></div>
+          <div class="b-stat"><span class="lbl">Annual Crashes</span><span class="val text-danger" id="b-crashes">0</span></div>
+          <div class="b-stat"><span class="lbl">Annual Fatalities</span><span class="val text-critical" id="b-fatalities">0</span></div>
+          <div class="b-stat"><span class="lbl">Avg Surface Index</span><span class="val" id="b-surface">--</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right Column: Outcomes 2, 3, 4, 5, 6 Tabs & Deep Dives -->
+    <aside class="panel panel-analytics">
+      <!-- Active Corridor Selector Bar -->
+      <div class="corridor-header-card">
+        <div class="corridor-meta">
+          <span class="badge-corridor" id="active-corridor-badge">NH-48</span>
+          <h2 id="active-location-title">Bilaspur Chowk Junction</h2>
+          <p id="active-corridor-desc">Chainage KM 44.5 | State: Haryana | 6-Lane Divided Highway</p>
+        </div>
+        <div class="risk-meter-container">
+          <div class="risk-circle" id="risk-gauge-circle">
+            <span class="risk-score-value" id="active-risk-score">76.4</span>
+            <span class="risk-score-unit">/100</span>
+          </div>
+          <div class="risk-tier-tag" id="active-risk-tier">Critical Blackspot</div>
+          <div class="true-risk-note" id="true-risk-note">True Risk Ratio: 1.18x</div>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs for Analysis Outcomes -->
+      <nav class="outcome-tabs">
+        <button class="tab-btn active" data-tab="tab-shap">
+          <i class="fa-solid fa-chart-column"></i> Outcome 3: SHAP XAI
+        </button>
+        <button class="tab-btn" data-tab="tab-counterfactual">
+          <i class="fa-solid fa-sliders"></i> Outcome 6: What-If Simulator
+        </button>
+        <button class="tab-btn" data-tab="tab-forecaster">
+          <i class="fa-solid fa-chart-line"></i> Outcome 4: Season Forecaster
+        </button>
+        <button class="tab-btn" data-tab="tab-prescriptive">
+          <i class="fa-solid fa-shield-halved"></i> Outcome 5: MoRTH Interventions
+        </button>
+      </nav>
+
+      <!-- Tab Content Area -->
+      <div class="tab-content-wrapper">
+        <!-- Tab 1: Outcome 3 SHAP XAI Local Feature Importance -->
+        <div class="tab-pane active" id="tab-shap">
+          <div class="tab-header-flex">
+            <div>
+              <h3><i class="fa-solid fa-brain"></i> Coordinate-Specific Local Feature Importance</h3>
+              <p class="tab-subtitle">Native TreeSHAP marginal breakdown proving causal drivers for authority intervention.</p>
+            </div>
+            <div class="base-value-box">
+              <span>Model Base Value (E[y]):</span>
+              <strong id="shap-base-val">48.2</strong>
+            </div>
+          </div>
+
+          <!-- SHAP Bar / Waterfall Container -->
+          <div class="shap-breakdown-list" id="shap-feature-list">
+            <!-- Rendered dynamically -->
+          </div>
+
+          <div class="shap-summary-box">
+            <div class="summary-icon"><i class="fa-solid fa-clipboard-check"></i></div>
+            <div class="summary-text" id="shap-summary-text">
+              Loading explainable causal analysis...
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Outcome 6 Counterfactual What-If Simulator -->
+        <div class="tab-pane" id="tab-counterfactual">
+          <div class="tab-header-flex">
+            <div>
+              <h3><i class="fa-solid fa-wand-magic-sparkles"></i> Counterfactual What-If Simulator</h3>
+              <p class="tab-subtitle">Dynamic prediction using XGBoost internal tree weights (Zero hardcoding).</p>
+            </div>
+            <span class="badge-verified"><i class="fa-solid fa-check-double"></i> XGBoost Booster Verified</span>
+          </div>
+
+          <!-- Interactive Sliders -->
+          <div class="sliders-grid">
+            <div class="slider-group">
+              <div class="slider-meta">
+                <label><i class="fa-solid fa-lightbulb"></i> Smart LED Lighting Boost</label>
+                <span class="slider-val" id="val-lighting">+40%</span>
+              </div>
+              <input type="range" id="slider-lighting" min="0" max="80" step="10" value="40" />
+              <span class="slider-spec">MoRTH Cl 808 / IS:1944 High Mast Standard</span>
+            </div>
+
+            <div class="slider-group">
+              <div class="slider-meta">
+                <label><i class="fa-solid fa-road"></i> Pavement Resurfacing (SMA)</label>
+                <span class="slider-val" id="val-surface">+50%</span>
+              </div>
+              <input type="range" id="slider-surface" min="0" max="80" step="10" value="50" />
+              <span class="slider-spec">MoRTH Section 500 Stone Matrix Asphalt Overlay</span>
+            </div>
+
+            <div class="slider-group">
+              <div class="slider-meta">
+                <label><i class="fa-solid fa-signs-post"></i> Signage Density Increment</label>
+                <span class="slider-val" id="val-signage">+2 Units</span>
+              </div>
+              <input type="range" id="slider-signage" min="0" max="4" step="1" value="2" />
+              <span class="slider-spec">IRC:67-2022 Microprismatic Gantry Boards</span>
+            </div>
+
+            <div class="slider-group">
+              <div class="slider-meta">
+                <label><i class="fa-solid fa-gauge-simple-high"></i> Speed Calming Reduction</label>
+                <span class="slider-val" id="val-speed">-15 km/h</span>
+              </div>
+              <input type="range" id="slider-speed" min="0" max="30" step="5" value="15" />
+              <span class="slider-spec">IRC:SP:88 Transverse Rumble Strips & VMS</span>
+            </div>
+          </div>
+
+          <!-- Simulation Projection Result -->
+          <div class="sim-results-card">
+            <div class="sim-score-row">
+              <div class="score-box">
+                <span class="lbl">Baseline Risk</span>
+                <span class="score-num" id="sim-base-score">76.4</span>
+              </div>
+              <div class="arrow-box"><i class="fa-solid fa-arrow-right-long"></i></div>
+              <div class="score-box highlight">
+                <span class="lbl">Projected Risk</span>
+                <span class="score-num text-success" id="sim-proj-score">48.2</span>
+              </div>
+              <div class="delta-box">
+                <span class="delta-badge" id="sim-reduction-pct">-36.9%</span>
+                <span class="impact-tier-badge" id="sim-impact-tier">Critical Impact</span>
+              </div>
+            </div>
+
+            <div class="sim-roi-grid">
+              <div class="roi-item">
+                <i class="fa-solid fa-indian-rupee-sign"></i>
+                <div>
+                  <span class="lbl">Estimated CapEx (INR)</span>
+                  <strong id="sim-capex">₹ 59.5 Lakhs</strong>
+                </div>
+              </div>
+              <div class="roi-item">
+                <i class="fa-solid fa-heart-pulse"></i>
+                <div>
+                  <span class="lbl">Projected 3-Yr Lives Saved</span>
+                  <strong class="text-success" id="sim-lives">23 Lives</strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="sim-audit-line">
+              <i class="fa-solid fa-shield-halved"></i>
+              <span id="sim-verification-proof">Evaluating across 120 booster decision trees...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 3: Outcome 4 Time-Series Crash Risk Forecaster -->
+        <div class="tab-pane" id="tab-forecaster">
+          <div class="tab-header-flex">
+            <div>
+              <h3><i class="fa-solid fa-calendar-days"></i> Time-Series Crash Risk Forecaster</h3>
+              <p class="tab-subtitle">Monsoon friction degradation, festival congestion, and fog risk modeling.</p>
+            </div>
+            <div class="vuln-pill">
+              <span>Monsoon Vulnerability:</span>
+              <strong class="text-warning" id="fc-monsoon-vuln">82.5/100</strong>
+            </div>
+          </div>
+
+          <!-- Chart.js Seasonal Incident Projection -->
+          <div class="chart-container">
+            <canvas id="forecaster-chart"></canvas>
+          </div>
+
+          <!-- Seasonal Critical Factors Table -->
+          <div class="seasonal-table-wrap">
+            <table class="seasonal-table">
+              <thead>
+                <tr>
+                  <th>Season Window</th>
+                  <th>Risk Multiplier</th>
+                  <th>Monthly Crashes</th>
+                  <th>MoRTH Mitigation Directive</th>
+                </tr>
+              </thead>
+              <tbody id="forecast-tbody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tab 4: Outcome 5 Prescriptive Safety Interventions Engine -->
+        <div class="tab-pane" id="tab-prescriptive">
+          <div class="tab-header-flex">
+            <div>
+              <h3><i class="fa-solid fa-file-signature"></i> Prescriptive Safety Interventions</h3>
+              <p class="tab-subtitle">Automated decision-support mapped to official MoRTH Specifications & IRC Codes.</p>
+            </div>
+            <div class="budget-box">
+              <span>Total Intervention Package:</span>
+              <strong class="text-info" id="presc-total-budget">₹ 95.2 Lakhs</strong>
+            </div>
+          </div>
+
+          <div class="interventions-list" id="interventions-container">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- Outcome / Secret Sauce: Closed-Loop CV Verification Studio Modal -->
+  <div class="modal-overlay hidden" id="cv-modal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="fa-solid fa-eye"></i> Closed-Loop CV Verification Studio (The Secret Sauce)
+        </div>
+        <button class="modal-close" id="close-cv-modal">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="cv-intro-banner">
+          <i class="fa-solid fa-circle-info"></i>
+          <div>
+            <strong>Autonomous Infrastructure Repair Verification</strong>:
+            Edge dashcam feeds detect hazards. Once contractors report repairs, our PyTorch Siamese Neural Network compares the post-repair state against the certified Safe Baseline image. Cosmetic/fraudulent patches are rejected.
+          </div>
+        </div>
+
+        <!-- Workflow Step Tracker -->
+        <div class="workflow-steps">
+          <div class="step-card completed">
+            <span class="step-num">1</span>
+            <div class="step-lbl">Hazard Detected</div>
+            <div class="step-sub">Pothole Crater Cluster</div>
+          </div>
+          <div class="step-line active"></div>
+          <div class="step-card completed">
+            <span class="step-num">2</span>
+            <div class="step-lbl">Concessionaire Alert</div>
+            <div class="step-sub">Latency: 28.4ms (&lt;500ms)</div>
+          </div>
+          <div class="step-line active"></div>
+          <div class="step-card active">
+            <span class="step-num">3</span>
+            <div class="step-lbl">Siamese Verification</div>
+            <div class="step-sub">Autonomous Audit Gate</div>
+          </div>
+        </div>
+
+        <!-- Image Comparison Workspace -->
+        <div class="cv-workspace-grid">
+          <!-- Baseline Safe Road -->
+          <div class="cv-card">
+            <div class="cv-card-lbl">1. Certified Safe Baseline</div>
+            <div class="img-wrapper">
+              <img id="cv-img-baseline" src="/api/cv/image/baseline_safe_road.jpg" alt="Certified Baseline Road" />
+              <span class="img-badge badge-safe">Reference Ground Truth</span>
+            </div>
+            <div class="cv-caption">MoRTH Standard Bituminous Surface</div>
+          </div>
+
+          <!-- Detected Hazard State -->
+          <div class="cv-card">
+            <div class="cv-card-lbl">2. Detected Edge Hazard</div>
+            <div class="img-wrapper">
+              <img id="cv-img-hazard" src="/api/cv/image/hazard_severe_potholes.jpg" alt="Hazard Crater" />
+              <span class="img-badge badge-danger">Hazard Dispatched</span>
+            </div>
+            <div class="cv-caption">Ticket #TKT-2026-NH48-44 | Size: 1.8m</div>
+          </div>
+
+          <!-- Candidate Post-Repair State -->
+          <div class="cv-card">
+            <div class="cv-card-lbl">3. Contractor Post-Repair Submission</div>
+            <div class="img-wrapper">
+              <img id="cv-img-candidate" src="/api/cv/image/rejected_cosmetic_patch.jpg" alt="Candidate Repair" />
+              <span class="img-badge badge-eval" id="candidate-badge">Deficient Patch</span>
+            </div>
+            <!-- Toggle between Deficient Patch and Verified Resurfacing for Demo -->
+            <div class="candidate-toggle-bar">
+              <button class="btn-toggle active" id="btn-pick-rejected">
+                Simulate Deficient Patch
+              </button>
+              <button class="btn-toggle" id="btn-pick-verified">
+                Simulate Hot-Mix Resurfacing
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Siamese Network Audit Evaluation Result -->
+        <div class="cv-audit-result-panel" id="cv-audit-panel">
+          <div class="cv-verdict-header">
+            <div class="verdict-tag" id="cv-verdict-badge">AUDIT PENDING</div>
+            <button class="btn-primary" id="btn-run-siamese-eval">
+              <i class="fa-solid fa-play"></i> Run Siamese Network Verification
+            </button>
+          </div>
+
+          <div class="cv-metrics-row">
+            <div class="metric-cell">
+              <span class="lbl">Siamese Cosine Similarity</span>
+              <div class="progress-bar-wrap">
+                <div class="progress-fill" id="siamese-sim-bar" style="width: 0%"></div>
+              </div>
+              <strong id="siamese-sim-val">--</strong>
+              <span class="threshold-note">Pass Threshold: &ge; 0.880</span>
+            </div>
+            <div class="metric-cell">
+              <span class="lbl">Processing Latency</span>
+              <strong class="text-success" id="cv-latency-val">-- ms</strong>
+              <span class="threshold-note">Benchmark SLA: &lt; 500ms</span>
+            </div>
+            <div class="metric-cell">
+              <span class="lbl">Cloud Audit Trail</span>
+              <strong id="cv-cos-uri">IBM COS Telemetry Vault</strong>
+              <span class="threshold-note">Immutable Hash Registered</span>
+            </div>
+          </div>
+
+          <div class="audit-verdict-text" id="cv-verdict-text">
+            Click 'Run Siamese Network Verification' to execute deep feature baseline matching.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaflet & Leaflet-Geoman JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="https://unpkg.com/@geoman-io/leaflet-geoman-free@2.14.2/dist/leaflet-geoman.min.js"></script>
+
+  <!-- Application Logic Modules -->
+  <script src="/static/js/map.js"></script>
+  <script src="/static/js/shap_panel.js"></script>
+  <script src="/static/js/counterfactual_view.js"></script>
+  <script src="/static/js/forecaster_view.js"></script>
+  <script src="/static/js/prescriptive_view.js"></script>
+  <script src="/static/js/closed_loop_cv.js"></script>
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

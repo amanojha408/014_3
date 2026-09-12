@@ -177,8 +177,8 @@ def verify_repair_cv(req: ClosedLoopCVRequest):
     )
 
     # Log evidence to IBM Cloud Object Storage and route to Watson ML
-    cloud_storage.store_verification_evidence(req.ticket_id, result.dict())
-    watson_connector.score_payload(result.dict())
+    cloud_storage.store_verification_evidence(req.ticket_id, result.model_dump())
+    watson_connector.score_payload(result.model_dump())
 
     return result
 

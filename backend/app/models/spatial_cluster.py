@@ -75,11 +75,12 @@ class SpatialClusterEngine:
 
         clusters: Dict[int, List[Dict[str, Any]]] = {}
         for idx, label in enumerate(labels):
-            if label not in clusters:
-                clusters[label] = []
+            cid = int(label)
+            if cid not in clusters:
+                clusters[cid] = []
             corridor_copy = dict(self.corridors[idx])
-            corridor_copy["cluster_id"] = int(label)
-            clusters[label].append(corridor_copy)
+            corridor_copy["cluster_id"] = cid
+            clusters[cid].append(corridor_copy)
 
         results = []
         for cluster_id, items in clusters.items():
@@ -89,8 +90,8 @@ class SpatialClusterEngine:
             total_fatalities = int(sum(it.get("fatalities_annual", 0) for it in items))
             
             results.append({
-                "cluster_id": cluster_id,
-                "cluster_name": f"Blackspot Cluster #{cluster_id + 1} ({items[0]['corridor_name']})",
+                "cluster_id": int(cluster_id),
+                "cluster_name": f"Blackspot Cluster #{int(cluster_id) + 1} ({items[0]['corridor_name']})",
                 "center_lat": round(mean_lat, 4),
                 "center_lon": round(mean_lon, 4),
                 "segment_count": len(items),
