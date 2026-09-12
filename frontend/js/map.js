@@ -21,8 +21,9 @@ window.RoadSafeMap = (function () {
 
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-    // High performance dark tile layer (CartoDB Dark Matter)
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    // High performance dark tile layer (CartoDB Dark Matter with authenticated API key)
+    const CARTO_API_KEY = 'cb1_3i9m_1_1864956ea990f7a63a0ee363';
+    L.tileLayer(`https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?api_key=${CARTO_API_KEY}`, {
       attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; MoRTH India',
       subdomains: 'abcd',
       maxZoom: 19
