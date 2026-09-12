@@ -227,7 +227,7 @@ export default function ConsumerWorkspace() {
                   <br />
                   <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
                     Feature Distance: {result.siamese_feature_distance.toFixed(4)} | Threshold: &ge;{' '}
-                    {result.threshold} | Siamese Model: {result.watson_model_id}
+                    {result.threshold}
                   </span>
                 </>
               ) : (

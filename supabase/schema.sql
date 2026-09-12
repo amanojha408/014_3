@@ -133,10 +133,9 @@ CREATE TABLE IF NOT EXISTS public.cv_repair_audits (
     status TEXT NOT NULL, -- 'VERIFIED_CLOSED' or 'REJECTED_DEFICIENT'
     latency_ms NUMERIC(6, 2) NOT NULL,
     siamese_feature_distance NUMERIC(6, 4),
-    audit_verdict TEXT NOT NULL,
+    audit_verdict TEXT,
     cos_storage_uri TEXT,
-    watson_model_id TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
 
 ALTER TABLE public.cv_repair_audits ENABLE ROW LEVEL SECURITY;

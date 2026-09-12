@@ -140,8 +140,7 @@ class ClosedLoopCVVerificationEngine:
                 f"Deficient or cosmetic patch detected. Concessionaire penalty alert triggered."
             )
 
-        cos_uri = f"cos://roadsafe-telemetry-bucket/verifications/{ticket_id}/evidence.json"
-        watson_id = "watson-model-siamese-cv-v2.1"
+        cos_uri = f"cos://roadsafe-india-telemetry-bucket/{ticket_id}.json"
 
         return ClosedLoopCVResponse(
             ticket_id=ticket_id,
@@ -153,8 +152,7 @@ class ClosedLoopCVVerificationEngine:
             latency_ms=elapsed_ms,
             siamese_feature_distance=round(euclidean_dist, 3),
             audit_verdict=verdict,
-            cos_storage_uri=cos_uri,
-            watson_model_id=watson_id
+            cos_storage_uri=cos_uri
         )
 
 # Global Singleton Instance

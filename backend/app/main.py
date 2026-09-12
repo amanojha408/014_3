@@ -31,7 +31,6 @@ from backend.app.models.forecaster import risk_forecaster
 from backend.app.models.prescriptive import prescriptive_engine
 from backend.app.models.spatial_cluster import spatial_engine
 from backend.app.models.siamese_cv import siamese_cv_engine
-from backend.app.services.ibm_watson_connector import watson_connector
 from backend.app.services.yolo_service import yolo_service
 from backend.app.services.cloud_storage import cloud_storage
 from backend.app.services.custom_dataset import load_custom_accidents
@@ -183,9 +182,8 @@ def verify_repair_cv(req: ClosedLoopCVRequest):
         segment_id=req.segment_id
     )
 
-    # Log evidence to IBM Cloud Object Storage and route to Watson ML
+    # Log evidence to Cloud Object Storage
     cloud_storage.store_verification_evidence(req.ticket_id, result.model_dump())
-    watson_connector.score_payload(result.model_dump())
 
     return result
 
@@ -199,11 +197,10 @@ async def detect_hazards(file: UploadFile = File(...)):
     detections = yolo_service.detect_hazards(contents)
     return {"status": "success", "detections": detections}
 
-@app.get("/api/ibm/status")
-def get_ibm_status():
-    """Return IBM Watson ML and Cloud Object Storage integration telemetry."""
+@app.get("/api/storage/status")
+def get_storage_status():
+    """Return Cloud Object Storage integration telemetry."""
     return {
-        "watson_ml": watson_connector.get_deployment_metadata(),
         "cloud_object_storage": cloud_storage.get_bucket_telemetry_summary()
     }
 

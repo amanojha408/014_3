@@ -130,7 +130,6 @@ class ClosedLoopCVResponse(BaseModel):
     siamese_feature_distance: float
     audit_verdict: str
     cos_storage_uri: str
-    watson_model_id: str
 
 class PolygonQueryRequest(BaseModel):
     polygon_coordinates: List[List[float]] # [[lat, lon], ...]
