@@ -1,8 +1,8 @@
 import React from 'react';
 
 export default function Header({
-  persona,
-  onPersonaChange,
+  activeWorkspace,
+  onChangeWorkspace,
   latency,
   user,
   onOpenAuthModal,
@@ -30,12 +30,6 @@ export default function Header({
         <div className="pill pill-live" title="Real-time telemetry stream active">
           <span className="live-dot"></span> Digital Twin: Active
         </div>
-        <div className="pill pill-ibm" id="watson-pill">
-          <i className="fa-solid fa-microchip"></i> Watson ML: Deployed
-        </div>
-        <div className="pill pill-cloud" id="cos-pill">
-          <i className="fa-solid fa-database"></i> IBM COS: Connected
-        </div>
         <div className="pill pill-latency">
           <i className="fa-solid fa-bolt"></i> Latency: <span>{latency}ms</span>
         </div>
@@ -53,22 +47,25 @@ export default function Header({
           <i className="fa-solid fa-compass"></i> Guide
         </button>
 
-        {/* User Persona Archetype Switcher */}
-        <div className="persona-selector-container">
-          <label htmlFor="persona-select">
-            <i className="fa-solid fa-user-gear"></i> Persona:
-          </label>
-          <select
-            id="persona-select"
-            className="persona-dropdown"
-            value={persona}
-            onChange={(e) => onPersonaChange(e.target.value)}
-          >
-            <option value="engineer">Municipal Traffic Engineer</option>
-            <option value="authority">State Road Authority</option>
-            <option value="fleet">Fleet Driver / Auditor</option>
-          </select>
-        </div>
+        {/* Authenticated Role Portal Indicator */}
+        {user && (
+          <div className="active-portal-badge">
+            <i className={
+              activeWorkspace === 'engineer'
+                ? 'fa-solid fa-compass-drafting'
+                : activeWorkspace === 'auditor'
+                ? 'fa-solid fa-camera-retro'
+                : 'fa-solid fa-building-columns'
+            }></i>
+            <span>
+              {activeWorkspace === 'engineer'
+                ? 'Municipal Engineer Portal'
+                : activeWorkspace === 'auditor'
+                ? 'CV Safety Auditor Portal'
+                : 'State Authority Executive Portal'}
+            </span>
+          </div>
+        )}
 
         {/* Supabase Authentication Status Pill */}
         {user ? (

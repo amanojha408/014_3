@@ -1,18 +1,13 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import Header from './components/Header';
-import HowToUseGuide from './components/HowToUseGuide';
+import GuideDrawer from './components/GuideDrawer';
 import LiveTicker from './components/LiveTicker';
-import OutcomeMap from './components/OutcomeMap';
-import CorridorOverviewCard from './components/CorridorOverviewCard';
-import OutcomeTabs from './components/OutcomeTabs';
-import ShapPanel from './components/ShapPanel';
-import WhatIfSimulator from './components/WhatIfSimulator';
-import SeasonForecaster from './components/SeasonForecaster';
-import PrescriptiveInterventions from './components/PrescriptiveInterventions';
-import ClosedLoopCVModal from './components/ClosedLoopCVModal';
-import AuthModal from './components/AuthModal';
+import AuthPage from './pages/AuthPage';
+import EngineerWorkspace from './pages/EngineerWorkspace';
+import AuthorityWorkspace from './pages/AuthorityWorkspace';
+import AuditorWorkspace from './pages/AuditorWorkspace';
 import { fetchCorridors } from './services/api';
-import { getCurrentUserSession, signOutUser, setDemoProfile } from './services/supabase';
+import { getCurrentUserSession, signOutUser } from './services/supabase';
 
 const TICKER_MESSAGES = [
   "NH-48 KM 44.5 (Bilaspur Chowk): Severe pothole cluster detected by dashcam CV | Concessionaire dispatched <500ms",
@@ -32,18 +27,21 @@ export default function App() {
   const [tickerText, setTickerText] = useState(TICKER_MESSAGES[0]);
   const [isCVModalOpen, setIsCVModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [isGuideVisible, setIsGuideVisible] = useState(true);
+  const [isGuideVisible, setIsGuideVisible] = useState(false);
   const [user, setUser] = useState(null);
+  const [activeWorkspace, setActiveWorkspace] = useState('authority'); // 'authority', 'engineer', 'auditor'
 
-  // Initialize Supabase session / Demo user
+  // Initialize Supabase session
   useEffect(() => {
     getCurrentUserSession().then((sessionUser) => {
       if (sessionUser) {
         setUser(sessionUser);
-      } else {
-        // Auto-initialize demo profile for frictionless reviewer experience
-        const defaultDemo = setDemoProfile('morth_officer');
-        setUser(defaultDemo);
+        if (sessionUser.role) {
+          const role = sessionUser.role.toLowerCase();
+          if (role.includes('engineer')) setActiveWorkspace('engineer');
+          else if (role.includes('auditor')) setActiveWorkspace('auditor');
+          else setActiveWorkspace('authority');
+        }
       }
     });
   }, []);
@@ -79,17 +77,16 @@ export default function App() {
     return () => clearInterval(timer);
   }, []);
 
-  const handlePersonaChange = (newPersona) => {
-    setPersona(newPersona);
-    if (newPersona === 'engineer') {
-      setActiveTab('tab-counterfactual');
-      setTickerText('[Persona Active: Municipal Traffic Engineer] Prioritizing Geoman zoning & What-If engineering interventions.');
-    } else if (newPersona === 'authority') {
-      setActiveTab('tab-shap');
-      setTickerText('[Persona Active: State Road Authority] Emphasizing causal TreeSHAP justifications & CRIF budget allocations.');
-    } else if (newPersona === 'fleet') {
-      setTickerText('[Persona Active: Fleet Driver / Auditor] Dashcam telemetry passive inference active.');
-      setIsCVModalOpen(true);
+  const handleLogin = (newUser, targetWorkspace) => {
+    setUser(newUser);
+    setActiveWorkspace(targetWorkspace || 'authority');
+    // Set appropriate ticker text based on login
+    if (targetWorkspace === 'engineer') {
+      setTickerText('[Municipal Traffic Engineer] Dashboard Loaded. Connecting to CV Edge Feeds...');
+    } else if (targetWorkspace === 'auditor') {
+      setTickerText('[CV Safety Auditor] Secret Sauce active. Siamese baseline verifications pending.');
+    } else {
+      setTickerText('[State Road Authority] Dashboard Loaded. Syncing CRIF Budgets...');
     }
   };
 
@@ -107,81 +104,59 @@ export default function App() {
   const activeCorridor = corridors.find((c) => c.id === selectedCorridorId);
   const corridorPrefix = selectedCorridorId ? selectedCorridorId.split('-')[0] : 'NH48';
 
+  // Render Auth Page if no user is logged in
+  if (!user) {
+    return <AuthPage onLogin={handleLogin} />;
+  }
+
   return (
-    <div className="dark-theme" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      {/* Top Header with Supabase Auth & Persona */}
+    <div className="app-container">
+      {/* Top Header with Supabase Auth & Workspaces */}
       <Header
-        persona={persona}
-        onPersonaChange={handlePersonaChange}
+        activeWorkspace={activeWorkspace}
+        onChangeWorkspace={setActiveWorkspace}
         latency={latency}
         user={user}
-        onOpenAuthModal={() => setIsAuthModalOpen(true)}
+        onOpenAuthModal={() => {}} // No longer needed since AuthPage handles it
         onSignOut={handleSignOut}
-        onToggleGuide={() => setIsGuideVisible(!isGuideVisible)}
+        onToggleGuide={() => setIsGuideVisible(true)}
       />
 
       {/* Live Dashcam Alert Ticker */}
       <LiveTicker
         tickerText={tickerText}
-        onOpenCVStudio={() => setIsCVModalOpen(true)}
+        onOpenCVStudio={() => setActiveWorkspace('auditor')}
       />
 
-      {/* Main Page "How to Use" Step-by-Step Interactive Guide */}
-      {isGuideVisible && (
-        <HowToUseGuide
-          onSelectTab={(tabId) => setActiveTab(tabId)}
-          onFitMap={handleFitMap}
-          onOpenCVStudio={() => setIsCVModalOpen(true)}
-        />
-      )}
+      {/* Slide-out Guide Drawer */}
+      <GuideDrawer
+        isOpen={isGuideVisible}
+        onClose={() => setIsGuideVisible(false)}
+        onSelectTab={(tabId) => {
+          // Map tabs to workspaces for guide compatibility
+          if (tabId === 'tab-counterfactual') setActiveWorkspace('engineer');
+          if (tabId === 'tab-shap' || tabId === 'tab-prescriptive' || tabId === 'tab-forecaster') setActiveWorkspace('authority');
+        }}
+        onFitMap={handleFitMap}
+      />
 
-      {/* Main Multi-Outcome Grid Layout */}
-      <main className="dashboard-layout">
-        {/* Outcome 1: Map Panel with Leaflet-Geoman */}
-        <OutcomeMap
+      {/* Dynamic Role-Based Workspace Routing */}
+      {activeWorkspace === 'engineer' && (
+        <EngineerWorkspace
           corridors={corridors}
           selectedCorridorId={selectedCorridorId}
           onSelectCorridor={setSelectedCorridorId}
+          activeCorridor={activeCorridor}
         />
+      )}
 
-        {/* Analytics & Deep Dive Panel */}
-        <aside className="panel panel-analytics">
-          <CorridorOverviewCard corridor={activeCorridor} />
+      {activeWorkspace === 'authority' && (
+        <AuthorityWorkspace selectedCorridorId={selectedCorridorId} />
+      )}
 
-          <OutcomeTabs
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-          />
-
-          <div className="tab-content-wrapper">
-            {activeTab === 'tab-shap' && (
-              <ShapPanel segmentId={selectedCorridorId} />
-            )}
-            {activeTab === 'tab-counterfactual' && (
-              <WhatIfSimulator segmentId={selectedCorridorId} />
-            )}
-            {activeTab === 'tab-forecaster' && (
-              <SeasonForecaster corridorId={corridorPrefix} />
-            )}
-            {activeTab === 'tab-prescriptive' && (
-              <PrescriptiveInterventions segmentId={selectedCorridorId} />
-            )}
-          </div>
-        </aside>
-      </main>
-
-      {/* Secret Sauce Modal: Closed-Loop CV Verification Studio */}
-      <ClosedLoopCVModal
-        isOpen={isCVModalOpen}
-        onClose={() => setIsCVModalOpen(false)}
-      />
-
-      {/* Supabase Authentication Modal */}
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-        onUserChange={(newUser) => setUser(newUser)}
-      />
+      {activeWorkspace === 'auditor' && (
+        <AuditorWorkspace />
+      )}
     </div>
   );
 }

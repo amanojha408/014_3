@@ -222,7 +222,7 @@ export default function ClosedLoopCVModal({ isOpen, onClose }) {
               <div className="metric-cell">
                 <span className="lbl">Cloud Audit Trail</span>
                 <strong id="cv-cos-uri">
-                  {result ? `IBM COS: ${result.ticket_id}.json` : 'IBM COS Telemetry Vault'}
+                  {result ? `Cloud Storage: ${result.ticket_id}.json` : 'Cloud Object Storage Vault'}
                 </strong>
                 <span className="threshold-note">Immutable Hash Registered</span>
               </div>
@@ -235,7 +235,7 @@ export default function ClosedLoopCVModal({ isOpen, onClose }) {
                   <br />
                   <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
                     Feature Distance: {result.siamese_feature_distance.toFixed(4)} | Threshold: &ge;{' '}
-                    {result.threshold} | IBM Watson Model: {result.watson_model_id}
+                    {result.threshold} | Siamese Model: {result.watson_model_id}
                   </span>
                 </>
               ) : (
