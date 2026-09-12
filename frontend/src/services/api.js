@@ -3,7 +3,7 @@
  * Centralized service layer for all FastAPI REST endpoints.
  */
 
-const API_BASE = '/api';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
 
 export async function fetchHealth() {
   const res = await fetch(`${API_BASE}/health`);

@@ -5,12 +5,13 @@ import { fetchSpatialClusters, queryBoundaryPolygon, fetchCustomAccidents } from
 
 const CARTO_API_KEY = import.meta.env.VITE_CARTO_API_KEY || 'cb1_3i9m_1_1864956ea990f7a63a0ee363';
 
-export default function OutcomeMap({ corridors, selectedCorridorId, onSelectCorridor }) {
+export default function OutcomeMap({ corridors, selectedCorridorId, onSelectCorridor, routeRequest, onRouteCalculated }) {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
   const markersLayerRef = useRef(null);
   const clustersLayerRef = useRef(null);
   const accidentsLayerRef = useRef(null);
+  const routeLayerRef = useRef(null);
   const activePolygonRef = useRef(null);
 
   const [clustersActive, setClustersActive] = useState(false);
@@ -43,6 +44,7 @@ export default function OutcomeMap({ corridors, selectedCorridorId, onSelectCorr
     markersLayerRef.current = L.layerGroup().addTo(map);
     clustersLayerRef.current = L.layerGroup().addTo(map);
     accidentsLayerRef.current = L.layerGroup().addTo(map);
+    routeLayerRef.current = L.layerGroup().addTo(map);
 
     // Geoman controls
     map.pm.addControls({
@@ -158,6 +160,27 @@ export default function OutcomeMap({ corridors, selectedCorridorId, onSelectCorr
       });
 
       markersLayerRef.current.addLayer(marker);
+
+      // Add Red Hazard Highlight for Sharp Curves or Potholes
+      if (seg.curvature_index > 70 || seg.surface_quality_index < 45) {
+        let hazardLabel = seg.curvature_index > 70 ? "Sharp Curve Hazard" : "Severe Pothole/Surface Hazard";
+        const hazardHighlight = L.circle([seg.latitude, seg.longitude], {
+          color: '#dc2626',
+          fillColor: '#ef4444',
+          fillOpacity: 0.4,
+          radius: 800, // 800 meters radius to highlight the road segment
+          weight: 2,
+          dashArray: '5, 5'
+        });
+        
+        hazardHighlight.bindTooltip(`
+          <div style="font-family: 'Outfit', sans-serif; color: #dc2626; font-weight: bold;">
+            <i class="fa-solid fa-triangle-exclamation"></i> ${hazardLabel}
+          </div>
+        `, { permanent: false, direction: 'top' });
+
+        markersLayerRef.current.addLayer(hazardHighlight);
+      }
     });
   }, [corridors, selectedCorridorId]);
 
@@ -188,25 +211,53 @@ export default function OutcomeMap({ corridors, selectedCorridorId, onSelectCorr
       const accMarker = L.marker([acc.latitude, acc.longitude], { icon: accidentIcon });
 
       accMarker.bindPopup(`
-        <div style="font-family: 'Outfit', sans-serif; min-width: 220px; color: #0f172a; padding: 2px;">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-size: 0.68rem; font-weight: 800; color: ${pinColor}; background: ${pinColor}18; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">
+        <div style="font-family: 'Outfit', sans-serif; min-width: 260px; color: #0f172a; padding: 4px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span style="font-size: 0.75rem; font-weight: 800; color: ${pinColor}; background: ${pinColor}18; padding: 3px 8px; border-radius: 6px; text-transform: uppercase; border: 1px solid ${pinColor}40;">
               ${acc.accident_severity}
             </span>
-            <span style="font-size: 0.7rem; color: #64748b; font-family: monospace;">${acc.id}</span>
+            <span style="font-size: 0.7rem; color: #64748b; font-family: monospace; background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">${acc.id}</span>
           </div>
-          <strong style="font-size: 0.92rem; color: #0f172a; display: block; margin: 4px 0 2px 0;">
+          <strong style="font-size: 1rem; color: #0f172a; display: block; margin: 6px 0 2px 0;">
             ${acc.location_name}
           </strong>
-          <div style="font-size: 0.72rem; color: #64748b;">
-            Corridor: <strong>${acc.corridor}</strong> | Date: ${acc.date} (${acc.time})
+          <div style="font-size: 0.75rem; color: #475569; display: flex; justify-content: space-between; margin-bottom: 4px;">
+            <span><i class="fa-solid fa-road"></i> <strong>${acc.corridor}</strong></span>
+            <span><i class="fa-regular fa-clock"></i> ${acc.date} (${acc.time})</span>
           </div>
-          <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 6px 0;"/>
-          <div style="font-size: 0.76rem; line-height: 1.45; color: #334155;">
-            Collision Type: <strong>${acc.collision_type}</strong><br/>
-            Fatalities: <strong style="color: #dc2626;">${acc.fatalities}</strong> | Grievous Injuries: <strong style="color: #d97706;">${acc.grievous_injuries}</strong><br/>
-            Weather: ${acc.weather} | Vehicles: ${acc.vehicles_involved}<br/>
-            Probable Cause: <em style="color: #0f172a;">${acc.cause}</em>
+          
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px; margin-top: 8px;">
+            <table style="width: 100%; font-size: 0.76rem; color: #334155; border-collapse: collapse;">
+              <tbody>
+                <tr>
+                  <td style="padding: 3px 0; color: #64748b;">Coordinates:</td>
+                  <td style="padding: 3px 0; text-align: right; font-family: monospace;">${parseFloat(acc.latitude).toFixed(4)}, ${parseFloat(acc.longitude).toFixed(4)}</td>
+                </tr>
+                <tr style="border-top: 1px solid #e2e8f0;">
+                  <td style="padding: 3px 0; color: #64748b;">Collision Type:</td>
+                  <td style="padding: 3px 0; text-align: right; font-weight: 600;">${acc.collision_type}</td>
+                </tr>
+                <tr style="border-top: 1px solid #e2e8f0;">
+                  <td style="padding: 3px 0; color: #64748b;">Weather:</td>
+                  <td style="padding: 3px 0; text-align: right;">${acc.weather}</td>
+                </tr>
+                <tr style="border-top: 1px solid #e2e8f0;">
+                  <td style="padding: 3px 0; color: #64748b;">Vehicles:</td>
+                  <td style="padding: 3px 0; text-align: right;">${acc.vehicles_involved}</td>
+                </tr>
+                <tr style="border-top: 1px solid #e2e8f0;">
+                  <td style="padding: 3px 0; color: #64748b;">Casualties:</td>
+                  <td style="padding: 3px 0; text-align: right;">
+                    Fatal: <strong style="color: #dc2626;">${acc.fatalities}</strong> | 
+                    Injured: <strong style="color: #d97706;">${acc.grievous_injuries}</strong>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="margin-top: 8px; font-size: 0.78rem; line-height: 1.4; color: #1e293b; background: #fffbeb; padding: 6px 8px; border-left: 3px solid #fbbf24; border-radius: 0 4px 4px 0;">
+            <strong style="color: #b45309; display: block; font-size: 0.7rem; margin-bottom: 2px;">PROBABLE CAUSE</strong>
+            ${acc.cause}
           </div>
         </div>
       `);
@@ -214,6 +265,66 @@ export default function OutcomeMap({ corridors, selectedCorridorId, onSelectCorr
       accidentsLayerRef.current.addLayer(accMarker);
     });
   }, [customAccidents, accidentsActive]);
+
+  // Handle Route Optimization Request
+  useEffect(() => {
+    if (!mapRef.current || !routeLayerRef.current || !routeRequest) return;
+    
+    routeLayerRef.current.clearLayers();
+
+    const fetchCoordinates = async (query) => {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`);
+      const data = await res.json();
+      if (data && data.length > 0) {
+        return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
+      }
+      return null;
+    };
+
+    const drawRoute = async () => {
+      try {
+        const start = await fetchCoordinates(routeRequest.startLoc);
+        const end = await fetchCoordinates(routeRequest.endLoc);
+
+        if (start && end) {
+          const res = await fetch(`https://router.project-osrm.org/route/v1/driving/${start.lon},${start.lat};${end.lon},${end.lat}?overview=full&geometries=geojson`);
+          const data = await res.json();
+
+          if (data.routes && data.routes.length > 0) {
+            if (onRouteCalculated) {
+              onRouteCalculated({ 
+                distance: data.routes[0].distance, 
+                duration: data.routes[0].duration 
+              });
+            }
+
+            const geojson = data.routes[0].geometry;
+            const routeLine = L.geoJSON(geojson, {
+              style: {
+                color: '#10b981', // safe green
+                weight: 5,
+                opacity: 0.8,
+                dashArray: '10, 10'
+              }
+            });
+
+            routeLine.bindTooltip(`
+              <div style="font-family: 'Outfit', sans-serif; color: #065f46; font-weight: bold;">
+                <i class="fa-solid fa-shield-halved"></i> Optimized Safe Route Generated
+              </div>
+            `, { permanent: false, sticky: true });
+
+            routeLayerRef.current.addLayer(routeLine);
+            mapRef.current.fitBounds(routeLine.getBounds(), { padding: [50, 50] });
+          }
+        }
+      } catch (err) {
+        console.error('Failed to draw route:', err);
+      }
+    };
+
+    drawRoute();
+  }, [routeRequest]);
 
   // Center on selected corridor
   useEffect(() => {
@@ -310,7 +421,32 @@ export default function OutcomeMap({ corridors, selectedCorridorId, onSelectCorr
       </div>
 
       {/* Map Container */}
-      <div id="risk-map" className="map-container" ref={mapContainerRef}></div>
+      <div style={{ position: 'relative' }}>
+        <div id="risk-map" className="map-container" ref={mapContainerRef}></div>
+        {/* Map Legend */}
+        <div className="map-legend" style={{ position: 'absolute', bottom: '20px', left: '20px', zIndex: 400, background: 'rgba(255,255,255,0.9)', padding: '10px 15px', borderRadius: '6px', boxShadow: '0 2px 6px rgba(0,0,0,0.2)', fontSize: '0.8rem', fontFamily: 'Outfit, sans-serif' }}>
+          <h4 style={{ margin: '0 0 8px 0', fontSize: '0.9rem', color: '#0f172a' }}>Map Legend</h4>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
+            <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#dc2626', display: 'inline-block', marginRight: '8px', border: '1px solid #fff', boxShadow: '0 0 2px rgba(0,0,0,0.5)' }}></span> Critical Risk (Score &ge; 70)
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
+            <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#d97706', display: 'inline-block', marginRight: '8px', border: '1px solid #fff', boxShadow: '0 0 2px rgba(0,0,0,0.5)' }}></span> High Risk (Score &ge; 50)
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+            <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#0284c7', display: 'inline-block', marginRight: '8px', border: '1px solid #fff', boxShadow: '0 0 2px rgba(0,0,0,0.5)' }}></span> Moderate Risk (Score &lt; 50)
+          </div>
+          <hr style={{ margin: '6px 0', border: 'none', borderTop: '1px solid #cbd5e1' }} />
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
+            <span style={{ width: '14px', height: '14px', borderRadius: '50%', background: 'rgba(239, 68, 68, 0.4)', border: '2px dashed #dc2626', display: 'inline-block', marginRight: '8px' }}></span> Severe Hazard Zone (Curve/Pothole)
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <div style={{ width: '14px', height: '14px', borderRadius: '50%', background: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '7px', marginRight: '8px', border: '1px solid #fff' }}>
+              <i className="fa-solid fa-car-burst"></i>
+            </div>
+            Accident Report
+          </div>
+        </div>
+      </div>
 
       {/* Spatial Boundary Query Result Card */}
       {boundaryData && (

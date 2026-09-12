@@ -47,7 +47,7 @@ Our **Secret Sauce**—and novel advantage—is the proprietary **Closed-Loop Co
 * **18 lives lost every 60 minutes** on Indian roads (~1.6 lakh deaths annually).
 * **40% of fatalities** occur at known, repetitive "Blackspots" where reported repairs remain physically unverified.
 * Existing government tools are delayed, manual, and reactive ("sitcom" safety campaigns).
-* **The "Well" Methodology**: RoadSafe India 360 builds a narrow, deep utility specifically tailored for Municipal Traffic Engineers, State Road Authorities, and MoRTH to mathematically defend infrastructure capital allocation.
+* **The "Well" Methodology**: RoadSafe India 360 builds a narrow, deep utility specifically tailored for Government Officials, Fleet Managers, and everyday Consumers to mathematically identify and avoid road hazards.
 
 ---
 
@@ -55,9 +55,9 @@ Our **Secret Sauce**—and novel advantage—is the proprietary **Closed-Loop Co
 
 | Persona | Role | The Schlep (Critical Pain Point) | RoadSafe 360 Transformation |
 | :--- | :--- | :--- | :--- |
-| **Municipal Traffic Engineer** | Urban safety maintenance & zone planning | Manual tracking of ward boundaries & failure to visualize hazard clusters in real-time | **Leaflet-Geoman** spatial drawing tools + instant polygon aggregate risk calculation |
-| **State Road Authority** | Corridor management & multi-crore budgeting | Inability to provide explainable data-driven proof to justify high-stakes road spending | **SHAP Local Feature Importance** + **XGBoost Counterfactual What-If Simulator** |
-| **Fleet Driver** | Long-haul logistics & vehicle operation | Tedious manual log-keeping of road hazards / potholes | **Passive Dashcam CV Telemetry** (<500ms edge alert latency) |
+| **Government Official** | City planning & infrastructure budgeting | Inability to provide explainable data-driven proof to justify high-stakes road repair spending | **SHAP Local Feature Importance** + **XGBoost Counterfactual What-If Simulator** |
+| **Fleet Manager** | Logistics & delivery operations (e.g., Zomato, Swiggy) | Drivers constantly hit hazardous road stretches leading to delays and accidents | **Route Optimization Engine** that proactively calculates safe routes avoiding blackspots |
+| **Consumer / Citizen** | Daily commuter & road user | Tedious manual reporting of potholes; no transparency on if authorities actually fix them | **Crowd-sourced Dashcam Telemetry** + **Siamese CV verification** of contractor repairs |
 
 ---
 

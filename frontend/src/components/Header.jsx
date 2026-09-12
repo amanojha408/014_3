@@ -52,17 +52,17 @@ export default function Header({
           <div className="active-portal-badge">
             <i className={
               activeWorkspace === 'engineer'
-                ? 'fa-solid fa-compass-drafting'
+                ? 'fa-solid fa-truck-fast'
                 : activeWorkspace === 'auditor'
                 ? 'fa-solid fa-camera-retro'
                 : 'fa-solid fa-building-columns'
             }></i>
             <span>
               {activeWorkspace === 'engineer'
-                ? 'Municipal Engineer Portal'
+                ? 'Fleet Manager Portal'
                 : activeWorkspace === 'auditor'
-                ? 'CV Safety Auditor Portal'
-                : 'State Authority Executive Portal'}
+                ? 'Consumer Feedback Portal'
+                : 'Government Official Portal'}
             </span>
           </div>
         )}

@@ -5,7 +5,7 @@ services:
     region: oregon
     plan: free
     buildCommand: "pip install --upgrade pip && pip install -r requirements.txt"
-    startCommand: "python run.py"
+    startCommand: "gunicorn backend.app.main:app -w 4 -k uvicorn.workers.UvicornWorker"
     envVars:
       - key: PYTHON_VERSION
         value: 3.10.12

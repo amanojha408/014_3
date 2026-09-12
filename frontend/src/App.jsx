@@ -3,9 +3,9 @@ import Header from './components/Header';
 import GuideDrawer from './components/GuideDrawer';
 import LiveTicker from './components/LiveTicker';
 import AuthPage from './pages/AuthPage';
-import EngineerWorkspace from './pages/EngineerWorkspace';
-import AuthorityWorkspace from './pages/AuthorityWorkspace';
-import AuditorWorkspace from './pages/AuditorWorkspace';
+import FleetManagerWorkspace from './pages/FleetManagerWorkspace';
+import GovernmentWorkspace from './pages/GovernmentWorkspace';
+import ConsumerWorkspace from './pages/ConsumerWorkspace';
 import { fetchCorridors } from './services/api';
 import { getCurrentUserSession, signOutUser } from './services/supabase';
 
@@ -38,8 +38,8 @@ export default function App() {
         setUser(sessionUser);
         if (sessionUser.role) {
           const role = sessionUser.role.toLowerCase();
-          if (role.includes('engineer')) setActiveWorkspace('engineer');
-          else if (role.includes('auditor')) setActiveWorkspace('auditor');
+          if (role.includes('fleet manager')) setActiveWorkspace('engineer');
+          else if (role.includes('consumer')) setActiveWorkspace('auditor');
           else setActiveWorkspace('authority');
         }
       }
@@ -82,11 +82,11 @@ export default function App() {
     setActiveWorkspace(targetWorkspace || 'authority');
     // Set appropriate ticker text based on login
     if (targetWorkspace === 'engineer') {
-      setTickerText('[Municipal Traffic Engineer] Dashboard Loaded. Connecting to CV Edge Feeds...');
+      setTickerText('[Logistics Partner] Dashboard Loaded. Connecting to CV Edge Feeds...');
     } else if (targetWorkspace === 'auditor') {
-      setTickerText('[CV Safety Auditor] Secret Sauce active. Siamese baseline verifications pending.');
+      setTickerText('[Consumer Feedback] Secret Sauce active. Siamese baseline verifications pending.');
     } else {
-      setTickerText('[State Road Authority] Dashboard Loaded. Syncing CRIF Budgets...');
+      setTickerText('[Government Official] Dashboard Loaded. Syncing CRIF Budgets...');
     }
   };
 
@@ -142,7 +142,7 @@ export default function App() {
 
       {/* Dynamic Role-Based Workspace Routing */}
       {activeWorkspace === 'engineer' && (
-        <EngineerWorkspace
+        <FleetManagerWorkspace
           corridors={corridors}
           selectedCorridorId={selectedCorridorId}
           onSelectCorridor={setSelectedCorridorId}
@@ -151,11 +151,15 @@ export default function App() {
       )}
 
       {activeWorkspace === 'authority' && (
-        <AuthorityWorkspace selectedCorridorId={selectedCorridorId} />
+        <GovernmentWorkspace 
+          corridors={corridors}
+          selectedCorridorId={selectedCorridorId} 
+          onSelectCorridor={setSelectedCorridorId}
+        />
       )}
 
       {activeWorkspace === 'auditor' && (
-        <AuditorWorkspace />
+        <ConsumerWorkspace />
       )}
     </div>
   );

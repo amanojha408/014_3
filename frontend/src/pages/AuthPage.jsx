@@ -6,7 +6,7 @@ export default function AuthPage({ onLogin }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
-  const [role, setRole] = useState('Municipal Traffic Engineer');
+  const [role, setRole] = useState('Fleet Manager');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
@@ -29,9 +29,9 @@ export default function AuthPage({ onLogin }) {
         role: res.user.user_metadata?.role || 'Authority',
         badge: 'Supabase Verified'
       };
-      const targetWorkspace = user.role.toLowerCase().includes('engineer')
+      const targetWorkspace = user.role.toLowerCase().includes('fleet manager')
         ? 'engineer'
-        : user.role.toLowerCase().includes('auditor')
+        : user.role.toLowerCase().includes('consumer')
         ? 'auditor'
         : 'authority';
       onLogin(user, targetWorkspace);
@@ -57,9 +57,9 @@ export default function AuthPage({ onLogin }) {
           role: role,
           badge: 'Supabase Verified'
         };
-        const targetWorkspace = role.toLowerCase().includes('engineer')
+        const targetWorkspace = role.toLowerCase().includes('fleet manager')
           ? 'engineer'
-          : role.toLowerCase().includes('auditor')
+          : role.toLowerCase().includes('consumer')
           ? 'auditor'
           : 'authority';
         setTimeout(() => onLogin(user, targetWorkspace), 800);
@@ -160,6 +160,16 @@ export default function AuthPage({ onLogin }) {
             >
               Create Account
             </button>
+            <button
+              type="button"
+              className={authMode === 'howtouse' ? 'active' : ''}
+              onClick={() => {
+                setAuthMode('howtouse');
+                setErrorMsg('');
+              }}
+            >
+              How to Use
+            </button>
           </div>
 
           {errorMsg && (
@@ -186,8 +196,8 @@ export default function AuthPage({ onLogin }) {
                   <i className="fa-solid fa-building-columns"></i>
                 </div>
                 <div className="role-text-meta">
-                  <h4>Authority / Executive</h4>
-                  <span className="role-sub">State Road Authority</span>
+                  <h4>Government Official</h4>
+                  <span className="role-sub">City Planner &amp; Executive</span>
                   <span className="role-dept">Access: Executive Dashboard, SHAP XAI &amp; CRIF CapEx</span>
                 </div>
                 <div className="role-chevron">
@@ -204,8 +214,8 @@ export default function AuthPage({ onLogin }) {
                   <i className="fa-solid fa-compass-drafting"></i>
                 </div>
                 <div className="role-text-meta">
-                  <h4>Traffic Engineer</h4>
-                  <span className="role-sub">Municipal Engineer</span>
+                  <h4>Fleet Manager</h4>
+                  <span className="role-sub">Logistics Partner</span>
                   <span className="role-dept">Access: Ward Safety Zoning &amp; Speed Calming Simulator</span>
                 </div>
                 <div className="role-chevron">
@@ -222,14 +232,51 @@ export default function AuthPage({ onLogin }) {
                   <i className="fa-solid fa-camera-retro"></i>
                 </div>
                 <div className="role-text-meta">
-                  <h4>Safety Auditor</h4>
-                  <span className="role-sub">Road Safety Auditor</span>
+                  <h4>Consumer / Citizen</h4>
+                  <span className="role-sub">Daily Commuter</span>
                   <span className="role-dept">Access: Closed-Loop CV Studio &amp; PyTorch Siamese Verification</span>
                 </div>
                 <div className="role-chevron">
                   <i className="fa-solid fa-chevron-right"></i>
                 </div>
               </button>
+            </div>
+          )}
+
+          {/* How to Use Mode */}
+          {authMode === 'howtouse' && (
+            <div className="how-to-use-section" style={{ textAlign: 'left' }}>
+              <h3 style={{ color: '#0f172a', marginBottom: '1.2rem', fontSize: '1.15rem', fontWeight: 'bold' }}>Understanding User Roles</h3>
+              
+              <div style={{ marginBottom: '1.2rem', padding: '1rem', background: '#f8fafc', borderLeft: '4px solid #2563eb', borderRadius: '6px' }}>
+                <h4 style={{ color: '#2563eb', margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1rem' }}>
+                  <i className="fa-solid fa-building-columns"></i> Government Official
+                </h4>
+                <p style={{ margin: '0', fontSize: '0.85rem', color: '#475569', lineHeight: '1.6' }}>
+                  <strong style={{ color: '#1e293b' }}>Target User:</strong> Government Officials & City Planners.<br/>
+                  <strong style={{ color: '#1e293b' }}>Purpose:</strong> Provides a high-level view of the national road network. Use this role to monitor key performance indicators (KPIs) like monitored corridors, high-hazard segments, and budget allocations. It features a map to visualize risk, a SHAP explainer to understand why a segment is risky, and tools for forecasting seasonal risk and generating prescriptive safety interventions.
+                </p>
+              </div>
+
+              <div style={{ marginBottom: '1.2rem', padding: '1rem', background: '#f8fafc', borderLeft: '4px solid #10b981', borderRadius: '6px' }}>
+                <h4 style={{ color: '#10b981', margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1rem' }}>
+                  <i className="fa-solid fa-compass-drafting"></i> Fleet Manager
+                </h4>
+                <p style={{ margin: '0', fontSize: '0.85rem', color: '#475569', lineHeight: '1.6' }}>
+                  <strong style={{ color: '#1e293b' }}>Target User:</strong> Logistics Partners & Fleet Managers (e.g., Delivery Companies).<br/>
+                  <strong style={{ color: '#1e293b' }}>Purpose:</strong> Focused on safe route planning. Use this role to view granular details about a specific corridor and run safe Route Optimization algorithms to direct delivery fleets away from critical hazard zones and blackspots.
+                </p>
+              </div>
+
+              <div style={{ padding: '1rem', background: '#f8fafc', borderLeft: '4px solid #8b5cf6', borderRadius: '6px' }}>
+                <h4 style={{ color: '#8b5cf6', margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1rem' }}>
+                  <i className="fa-solid fa-camera-retro"></i> Consumer / Citizen
+                </h4>
+                <p style={{ margin: '0', fontSize: '0.85rem', color: '#475569', lineHeight: '1.6' }}>
+                  <strong style={{ color: '#1e293b' }}>Target User:</strong> Daily Commuters & Citizens.<br/>
+                  <strong style={{ color: '#1e293b' }}>Purpose:</strong> Responsible for validating road conditions and reporting issues via crowd-sourced dashcam footage. Use this role to access the Computer Vision (CV) Studio, where dashcam feeds automatically verify if repairs meet safety baselines using PyTorch Siamese Neural Networks.
+                </p>
+              </div>
             </div>
           )}
 
@@ -301,11 +348,11 @@ export default function AuthPage({ onLogin }) {
               </div>
 
               <div className="field-group">
-                <label>Authority Role</label>
+                <label>User Role</label>
                 <select value={role} onChange={(e) => setRole(e.target.value)}>
-                  <option value="Municipal Traffic Engineer">Municipal Traffic Engineer</option>
-                  <option value="State Road Authority Executive">State Road Authority Executive</option>
-                  <option value="Road Safety Auditor">Road Safety Auditor</option>
+                  <option value="Government Official">Government Official</option>
+                  <option value="Fleet Manager">Fleet Manager</option>
+                  <option value="Consumer / Citizen">Consumer / Citizen</option>
                 </select>
               </div>
 

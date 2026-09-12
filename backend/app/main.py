@@ -6,7 +6,7 @@ Mounts interactive frontend dashboard.
 
 import os
 from typing import List, Dict, Any
-from fastapi import FastAPI, HTTPException, Body
+from fastapi import FastAPI, HTTPException, Body, File, UploadFile
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
@@ -31,7 +31,8 @@ from backend.app.models.forecaster import risk_forecaster
 from backend.app.models.prescriptive import prescriptive_engine
 from backend.app.models.spatial_cluster import spatial_engine
 from backend.app.models.siamese_cv import siamese_cv_engine
-from backend.app.services.watson_ml import watson_connector
+from backend.app.services.ibm_watson_connector import watson_connector
+from backend.app.services.yolo_service import yolo_service
 from backend.app.services.cloud_storage import cloud_storage
 from backend.app.services.custom_dataset import load_custom_accidents
 
@@ -187,6 +188,16 @@ def verify_repair_cv(req: ClosedLoopCVRequest):
     watson_connector.score_payload(result.model_dump())
 
     return result
+
+@app.post("/api/cv/detect-hazards")
+async def detect_hazards(file: UploadFile = File(...)):
+    """
+    YOLO RoadGuard Custom detection endpoint.
+    Accepts an image and returns bounding boxes of detected road hazards.
+    """
+    contents = await file.read()
+    detections = yolo_service.detect_hazards(contents)
+    return {"status": "success", "detections": detections}
 
 @app.get("/api/ibm/status")
 def get_ibm_status():

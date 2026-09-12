@@ -14,7 +14,7 @@ const CANDIDATE_CONFIG = {
   }
 };
 
-export default function AuditorWorkspace() {
+export default function ConsumerWorkspace() {
   const [candidateMode, setCandidateMode] = useState('rejected');
   const [evaluating, setEvaluating] = useState(false);
   const [result, setResult] = useState(null);
@@ -49,9 +49,9 @@ export default function AuditorWorkspace() {
         <div className="cv-intro-banner">
           <i className="fa-solid fa-camera-retro"></i>
           <div>
-            <div style={{ fontWeight: 'bold', fontSize: '1.25rem', marginBottom: '0.25rem' }}>CV Safety Auditor Studio</div>
+            <div style={{ fontWeight: 'bold', fontSize: '1.25rem', marginBottom: '0.25rem' }}>Consumer & Citizen Feedback Studio</div>
             <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>
-              <strong>Autonomous Infrastructure Repair Verification</strong>:
+              <strong>Citizen-Sourced Infrastructure Repair Verification</strong>:
               Edge dashcam feeds detect hazards. Once contractors report repairs, our PyTorch Siamese Neural Network compares the post-repair state against the certified Safe Baseline image. Cosmetic/fraudulent patches are rejected.
             </div>
           </div>

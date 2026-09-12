@@ -2,8 +2,9 @@ import React from 'react';
 import ShapPanel from '../components/ShapPanel';
 import SeasonForecaster from '../components/SeasonForecaster';
 import PrescriptiveInterventions from '../components/PrescriptiveInterventions';
+import OutcomeMap from '../components/OutcomeMap';
 
-export default function AuthorityWorkspace({ selectedCorridorId }) {
+export default function GovernmentWorkspace({ corridors, selectedCorridorId, onSelectCorridor }) {
   const corridorPrefix = selectedCorridorId ? selectedCorridorId.split('-')[0] : 'NH48';
 
   return (
@@ -12,7 +13,7 @@ export default function AuthorityWorkspace({ selectedCorridorId }) {
         <div className="authority-title-row">
           <h2>
             <i className="fa-solid fa-building-columns"></i>
-            State Road Authority Executive Dashboard
+            Government Official Dashboard
           </h2>
         </div>
         <div className="executive-kpis">
@@ -35,13 +36,20 @@ export default function AuthorityWorkspace({ selectedCorridorId }) {
         </div>
       </div>
 
-      <div className="authority-grid">
-        <div className="authority-col-left">
-          <ShapPanel segmentId={selectedCorridorId} />
-        </div>
-        <div className="authority-col-right">
-          <PrescriptiveInterventions segmentId={selectedCorridorId} />
-          <SeasonForecaster corridorId={corridorPrefix} />
+      <div className="authority-grid" style={{ gridTemplateColumns: '1fr' }}>
+        <OutcomeMap 
+          corridors={corridors}
+          selectedCorridorId={selectedCorridorId}
+          onSelectCorridor={onSelectCorridor}
+        />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginTop: '1.5rem' }}>
+          <div className="authority-col-left">
+            <ShapPanel segmentId={selectedCorridorId} />
+          </div>
+          <div className="authority-col-right">
+            <PrescriptiveInterventions segmentId={selectedCorridorId} />
+            <SeasonForecaster corridorId={corridorPrefix} />
+          </div>
         </div>
       </div>
     </main>
